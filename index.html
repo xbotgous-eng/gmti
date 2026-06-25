@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GMTI · 你是哪种游戏玩家</title>
+<meta name="description" content="GMTI 游戏人格测试 · 4 维 16 型 · 12 道题找到你的本命游戏">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    background: #f5f0e8;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: #2a2a2a;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    overscroll-behavior: none;
+  }
+  body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    background:
+      radial-gradient(circle at 20% 10%, rgba(255, 210, 63, 0.18) 0%, transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(143, 174, 157, 0.20) 0%, transparent 40%),
+      #f5f0e8;
+  }
+  #app {
+    max-width: 390px;
+    width: 100%;
+    min-height: 100vh;
+    padding: 24px 20px 40px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ====== 公共组件 ====== */
+  .btn {
+    display: inline-block;
+    background: #2a2a2a;
+    color: #fff;
+    border: none;
+    padding: 16px 28px;
+    border-radius: 999px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.12);
+    letter-spacing: 0.5px;
+  }
+  .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.12); }
+  .btn-light {
+    background: #fff;
+    color: #2a2a2a;
+    border: 2px solid #2a2a2a;
+  }
+
+  .pixel-img { image-rendering: pixelated; image-rendering: -moz-crisp-edges; }
+
+  /* ====== 封面 ====== */
+  .cover {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 32px 0 24px;
+    gap: 20px;
+  }
+  .cover .tag {
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: #999;
+    text-transform: uppercase;
+  }
+  .cover h1 {
+    font-size: 36px;
+    font-weight: 900;
+    line-height: 1.2;
+    color: #1a1a1a;
+  }
+  .cover h1 .accent { color: #FF6B35; }
+  .cover .sub {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    max-width: 280px;
+  }
+
+  /* 跑马灯 */
+  .marquee-wrap {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%); /* 突破容器宽度限制 */
+    overflow: hidden;
+    position: relative;
+    padding: 8px 0;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .marquee-track {
+    display: flex;
+    gap: 16px;
+    width: max-content;
+    animation: marquee 30s linear infinite;
+  }
+  .marquee-wrap.reverse .marquee-track {
+    animation: marquee-reverse 35s linear infinite;
+  }
+  .marquee-track img {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    flex-shrink: 0;
+    image-rendering: pixelated;
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes marquee-reverse {
+    from { transform: translateX(-50%); }
+    to { transform: translateX(0); }
+  }
+
+  .cover .meta {
+    font-size: 12px;
+    color: #999;
+    display: flex;
+    gap: 16px;
+    margin-top: -8px;
+  }
+  .cover .meta span::before { content: "·"; margin-right: 6px; color: #ccc; }
+  .cover .meta span:first-child::before { content: ""; margin: 0; }
+
+  .cover .credit {
+    font-size: 11px;
+    color: #bbb;
+    margin-top: auto;
+  }
+
+  /* ====== 题目页 ====== */
+  .quiz {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-top: 8px;
+    animation: slideIn 0.35s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .progress-bar {
+    height: 6px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #FF6B35, #FFD23F);
+    border-radius: 999px;
+    transition: width 0.4s ease;
+  }
+  .progress-text {
+    font-size: 12px;
+    color: #999;
+    text-align: right;
+    margin-bottom: 28px;
+    letter-spacing: 1px;
+  }
+
+  .quiz-hint {
+    background: #fff;
+    border: 2px solid #2a2a2a;
+    padding: 10px 16px;
+    border-radius: 16px;
+    font-size: 13px;
+    color: #555;
+    display: inline-block;
+    position: relative;
+    margin-bottom: 18px;
+    max-width: 100%;
+    box-shadow: 3px 3px 0 #2a2a2a;
+  }
+  .quiz-hint::after {
+    content: "";
+    position: absolute;
+    bottom: -8px;
+    left: 24px;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-right: 2px solid #2a2a2a;
+    border-bottom: 2px solid #2a2a2a;
+    transform: rotate(45deg);
+  }
+
+  .quiz-title {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.45;
+    margin-bottom: 28px;
+    color: #1a1a1a;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 12px; }
+  .option {
+    background: #fff;
+    border: 2px solid #2a2a2a;
+    border-radius: 18px;
+    padding: 18px 20px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #2a2a2a;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: all 0.15s ease;
+    box-shadow: 3px 3px 0 #2a2a2a;
+    text-align: left;
+    font-family: inherit;
+    width: 100%;
+  }
+  .option:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 #2a2a2a;
+  }
+  .option.selected {
+    background: #FFD23F;
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 #2a2a2a;
+  }
+  .option .key {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #2a2a2a;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+  }
+  .option.selected .key { background: #2a2a2a; }
+
+  /* ====== 加载页 ====== */
+  .loading {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 24px;
+  }
+  .loading img {
+    width: 180px;
+    height: 180px;
+    object-fit: contain;
+    flex-shrink: 0;
+    animation: bounce 1s ease-in-out infinite alternate;
+  }
+  @keyframes bounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-12px); }
+  }
+  .loading h2 { font-size: 22px; font-weight: 700; }
+  .loading .step {
+    font-size: 14px;
+    color: #666;
+    height: 22px;
+  }
+  .loading .dots {
+    display: inline-block;
+    width: 24px;
+    text-align: left;
+  }
+
+  /* ====== 结果页 ====== */
+  .result { animation: slideIn 0.4s ease; }
+  .result-hero {
+    background: linear-gradient(135deg, var(--c1, #FF6B35), var(--c2, #FFD23F));
+    border-radius: 28px;
+    padding: 28px 22px 32px;
+    text-align: center;
+    color: #fff;
+    margin-bottom: 24px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.10);
+    position: relative;
+    overflow: hidden;
+  }
+  .result-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='1' fill='rgba(255,255,255,0.15)'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .result-hero .code {
+    font-size: 14px;
+    letter-spacing: 6px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    opacity: 0.95;
+  }
+  .result-hero .ip {
+    width: 240px;
+    height: 240px;
+    object-fit: contain;
+    display: block;
+    margin: 8px auto;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15));
+  }
+  .result-hero h2 {
+    font-size: 28px;
+    font-weight: 900;
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+  .result-hero .subtitle {
+    font-size: 14px;
+    opacity: 0.92;
+    line-height: 1.5;
+  }
+  .quote {
+    background: #fff;
+    border: 2px solid #2a2a2a;
+    border-radius: 20px;
+    padding: 22px 20px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #2a2a2a;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 500;
+    box-shadow: 4px 4px 0 #2a2a2a;
+    position: relative;
+  }
+  .quote::before { content: "「"; color: #FF6B35; font-size: 32px; line-height: 0; vertical-align: -8px; margin-right: 2px; }
+  .quote::after { content: "」"; color: #FF6B35; font-size: 32px; line-height: 0; vertical-align: -8px; margin-left: 2px; }
+
+  .section { margin-bottom: 24px; }
+  .section h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section h3::before {
+    content: "";
+    width: 4px;
+    height: 16px;
+    background: #FF6B35;
+    border-radius: 4px;
+  }
+  .traits {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .trait {
+    background: #fff;
+    border: 1.5px solid #2a2a2a;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    color: #2a2a2a;
+  }
+  .desc {
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #444;
+    border: 1.5px solid rgba(0,0,0,0.06);
+  }
+
+  /* 字母拆解卡片 */
+  .dims { display: flex; flex-direction: column; gap: 10px; }
+  .dim-row {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 16px;
+    border: 1.5px solid rgba(0,0,0,0.08);
+  }
+  .dim-label {
+    font-size: 11px;
+    color: #999;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .dim-versus {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .dim-side { flex: 1; padding: 8px 4px; border-radius: 10px; transition: all 0.2s; }
+  .dim-side.you {
+    background: linear-gradient(135deg, var(--c1, #FF6B35), var(--c2, #FFD23F));
+    color: #fff;
+    padding: 12px;
+  }
+  .dim-side.other {
+    background: rgba(0,0,0,0.03);
+    color: #aaa;
+    padding: 12px;
+  }
+  .dim-letter {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+  .dim-name {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .dim-desc {
+    font-size: 11px;
+    line-height: 1.5;
+    opacity: 0.92;
+  }
+  .dim-vs {
+    align-self: center;
+    color: #ccc;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .games {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .game-card {
+    background: #fff;
+    border: 1.5px solid rgba(0,0,0,0.08);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .game-rank {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--c1, #FF6B35), var(--c2, #FFD23F));
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .game-icon {
+    width: 92px;
+    height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--c1, #FF6B35), var(--c2, #FFD23F));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 22px;
+    overflow: hidden;
+  }
+  .game-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .game-info { flex: 1; min-width: 0; }
+  .game-name { font-size: 14px; font-weight: 700; color: #1a1a1a; margin-bottom: 2px; }
+  .game-meta { font-size: 11px; color: #999; }
+
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .actions .btn { width: 100%; }
+  .toast {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 999px;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, -8px); }
+
+  .footer-tip {
+    text-align: center;
+    font-size: 11px;
+    color: #bbb;
+    margin-top: 24px;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ 数据：12 道测试题 ============
+const QUESTIONS = [
+  // ========== E vs A · 动力来源 ==========
+  { text: "新游戏下载了一晚上，进度条刚跑完，屏幕一亮——眼前是一张大到看不到边的地图，几十个金色问号在远处闪个不停", hint: "你的手指停了 0.5 秒，下一秒要往哪儿迈", options: [
+    { text: "径直朝最远那个问号狂奔，主线？等我先去看看那个山头上到底有什么东西", dim: "E" },
+    { text: "深呼吸，老老实实顺着金色箭头走主线，问号留着——回头我会一个一个清干净的", dim: "A" },
+    { text: "原地不动，先打开菜单把所有按键摸一遍，地图缩到最大研究路线，磨刀不误砍柴工", dim: "A" }
+  ]},
+  { text: "你玩得正开心，屏幕右上角咚地弹出一个隐藏成就：「连续 30 天每天上线打卡」。30 天，每天，一天不能漏", hint: "你看到的瞬间，脑子里那句话是", options: [
+    { text: "30 天就为了一个图标？我连健身卡都没坚持过 30 天，这玩意儿放我面前是侮辱我", dim: "E" },
+    { text: "瞄了眼日历开始倒数：第 1 天，已设闹钟，已记仇，那个图标必须挂在我档案上", dim: "A" },
+    { text: "假装这个提示从未出现，关掉，继续做我刚才在做的事，打卡是给牛马的", dim: "E" }
+  ]},
+  { text: "你刚刚通关了一个让你心头一颤的游戏，演职员表在慢慢往上滚，BGM 余韵还在，手柄在腿上躺着", hint: "屏幕暗下来那一刻，你的反应是", options: [
+    { text: "直接退游戏，打开商店搜「下一个该玩什么」，旧爱已经配不上现在升级了的我", dim: "E" },
+    { text: "二话不说点新游戏 +，二周目走起，所有结局我都要看，所有支线我都要刷", dim: "A" },
+    { text: "盯着结局画面发呆三分钟，舍不得退，回头看主角的背影看了又看，世界我还没看够", dim: "E" }
+  ]},
+
+  // ========== T vs R · 应战姿势 ==========
+  { text: "一个 Boss 把你按在地上摩擦了五次，血条秒空，连它出过几招你都数不清，载入画面已经看到能背下来", hint: "第六次开始之前，你的真实状态是", options: [
+    { text: "暂停！手机备忘录打开，把它前三招的节奏抄下来，画个时序图，下一次我要带答案进场", dim: "T" },
+    { text: "直接 F 键再上，手感这东西只能在死里练出来，第六次第七次第八次，总有一次它要倒下", dim: "R" },
+    { text: "退游戏先去搜攻略和教学视频，对照自己的死亡录像看一遍，准备充分了我再回来报仇", dim: "T" }
+  ]},
+  { text: "新手教程一进去就是 20 分钟的长视频，把整个游戏的系统、合成、技能全讲了一遍，跳过键灰着不让按", hint: "讲到一半的时候你在干嘛", options: [
+    { text: "记忆宫殿启动，重要的还截了图，关键数值抄在便签上，理解透了我才敢动手", dim: "T" },
+    { text: "前三秒还在听，从第四秒开始狂按跳过键，跳不掉就划手机，会用了再说啊各位", dim: "R" },
+    { text: "半听半走神，看完只记住 NPC 那句「祝你好运」，反正不会的回头再查", dim: "R" }
+  ]},
+  { text: "面前两条路：一条又快又险（路上一堆怪和陷阱），一条又远又稳（绕一大圈但 0 风险）。任务时间还剩 10 分钟", hint: "你的本能选择是", options: [
+    { text: "走险的那条，路上想办法就行，死了重来一遍，浪费在绕路上才是真亏", dim: "R" },
+    { text: "走安全那条，稳扎稳打不浪费一滴血，复活时间够我打两把别的，性价比拉满", dim: "T" },
+    { text: "先存档，两条都跑一遍看哪个收益高，回头记下来，下次面对相似的路口我就有数了", dim: "T" }
+  ]},
+
+  // ========== S vs C · 社交模式 ==========
+  { text: "周五晚 11 点，你瘫在床上耳机一戴，灯关了，屏幕一亮，世界只剩你一个人——手机咚地震了一下，朋友消息", hint: "「一起来一把？」你的反应是", options: [
+    { text: "「来！等我十秒」秒回，立刻把单人存档退掉，组队语音一开就是几个小时", dim: "C" },
+    { text: "「今晚不了我想自己玩」回完手机扔床头，耳机一推继续沉浸我的世界，谁也别打扰", dim: "S" },
+    { text: "「几个人？太多人我有点累」先打听场面再决定，3 个以内可以，6 个我直接装睡", dim: "S" }
+  ]},
+  { text: "团战打到一半眼看要崩，队友开始在公屏互相挂人甩锅，「全是你的错」「不是我先死的吗」，气氛瞬间冰点", hint: "这时候的你在干嘛", options: [
+    { text: "默默把麦克风关了，把公屏折叠了，自己专心打完最后一波，眼不见心不烦", dim: "S" },
+    { text: "立刻打字「没事下把翻盘」「都别说了一起加油」，团队胶水非我莫属，我就是来粘合大家的", dim: "C" },
+    { text: "直接挂机摆烂，掏出手机刷视频，烦死了一群人吵架，老子先去厕所冷静一下", dim: "S" }
+  ]},
+  { text: "你最近发现了一个宝藏游戏，玩了三个小时还停不下来，眼睛都酸了但嘴角是笑的", hint: "好东西到手的那个瞬间，你的第一反应是", options: [
+    { text: "默默享受，先一个人通关再说，安利？等我玩透了再考虑要不要分享出来", dim: "S" },
+    { text: "立刻拉群发链接「都给我去玩！不玩不是兄弟」「赶紧的我等你们一起讨论」", dim: "C" },
+    { text: "朋友圈发一张神秘截图配「DM 我」，等着同好自己找上门来，悄悄筛人", dim: "C" }
+  ]},
+
+  // ========== N vs M · 在意什么 ==========
+  { text: "剧情突然给了主角一个 6 分钟的过场动画，手柄震动停了，背景音乐慢慢起来，画面切到一个黄昏", hint: "这 6 分钟里你的状态是", options: [
+    { text: "手柄一放，身子往后一靠，专心看，眼睛都不敢眨，怕错过任何一个微表情和镜头细节", dim: "N" },
+    { text: "在心里默念「快点啊我还要回去清地图清副本」，手已经在按键上准备一结束就动起来", dim: "M" },
+    { text: "顺手刷一下手机，背景声音听个大概就行，反正剧情之后会有图文攻略可以补", dim: "M" }
+  ]},
+  { text: "想想最近一次玩游戏「哇」地一下、起了一身鸡皮疙瘩 / 心跳漏一拍的瞬间", hint: "你脑子里浮现的画面是", options: [
+    { text: "某个配角悄悄告别那一段，BGM 一起，台词刚念完，鼻子一酸眼眶就湿了", dim: "N" },
+    { text: "凌晨我打出一套完美连招，几乎不可能 0.5 秒窗口，对手原地起飞，那一下舒爽到失眠", dim: "M" },
+    { text: "数值终于刷到 999/999 那一刻，所有属性条都拉满，强迫症被治愈，感觉这一周没白过", dim: "M" }
+  ]},
+
+  // ========== 末题 · 彩蛋 ==========
+  { text: "最后一题：下面三句「玩家箴言」，哪一句你看到会笑着点头、心想「这说的不就是我吗」", hint: "选那个让你嘴角忍不住上扬的", options: [
+    { text: "「我不是非要通关，我是想多待一会儿。」", dim: "N" },
+    { text: "「下次一定。」", dim: "E" },
+    { text: "「再来一把，最后一把，真的真的最后一把。」", dim: "M" }
+  ]}
+];
+
+// ============ 16 型动物映射 ============
+const ANIMALS = {
+  ETSN: "turtle", ETSM: "otter", ETCN: "fox", ETCM: "beaver",
+  ERSN: "chameleon", ERSM: "rhino", ERCN: "monkey", ERCM: "falcon",
+  EASN: "owl", EASM: "ant", EACN: "elephant", EACM: "wolf",
+  ATSN: "raccoon", ATSM: "bee", ATCN: "cat", ATCM: "lion"
+};
+
+const CDN_BASE = "https://picasso-private-1251524319.cos.ap-shanghai.myqcloud.com/formula-static/dibp/aicq3ri3/";
+
+// ============ 16 型 → 主色系映射 ============
+// E+T 沙黄+雾绿 / E+R 焦橙+亮黄 / A+T 钢蓝+深紫 / A+R 警红+海军蓝
+const PALETTES = {
+  ET: { c1: "#D4A574", c2: "#8FAE9D" },
+  ER: { c1: "#FF6B35", c2: "#FFD23F" },
+  AT: { c1: "#2C3E50", c2: "#6C5B7B" },
+  AR: { c1: "#E63946", c2: "#1D3557" }
+};
+
+// ============ 4 维度 8 字母含义（结果页 GMTI 拆解用） ============
+const DIMENSIONS = [
+  {
+    label: "动力来源",
+    pos: { letter: "E", name: "探索家", desc: "脚不停手不停，看到没去过的地方就两眼放光" },
+    neg: { letter: "A", name: "成就咖", desc: "目标感拉满，没刷完不睡觉，进度条是命" }
+  },
+  {
+    label: "应战姿势",
+    pos: { letter: "T", name: "策略派", desc: "上场先看面板做攻略，运气从来不是计划" },
+    neg: { letter: "R", name: "反应派", desc: "凭手感和直觉硬刚，肌肉记忆比脑子快" }
+  },
+  {
+    label: "社交模式",
+    pos: { letter: "S", name: "独狼", desc: "一个人沉浸最舒服，组队？看心情" },
+    neg: { letter: "C", name: "团魂", desc: "有朋友才有意思，赢不重要一起最重要" }
+  },
+  {
+    label: "在意什么",
+    pos: { letter: "N", name: "剧情控", desc: "为了一个 NPC 落泪，配乐起来腿就软" },
+    neg: { letter: "M", name: "机制控", desc: "数字跳动的爽感无可替代，操作即一切" }
+  }
+];
+
+// ============ 16 型结果文案 ============
+const RESULTS = {
+  ETSN: { title: "散步家", subtitle: "总在小路上多走一段，氛围比通关重要", quote: "我不是非要去哪儿，我就是想多待一会儿。",
+    traits: ["截图比剧情进度多","听见 BGM 就走神","卸载前要回去再看一眼","通关时间比别人多三倍"],
+    desc: "你打游戏的本质不是「玩」，是「住进去」。别人在赶主线，你在某个山坡上看了二十分钟夕阳；别人在打怪升级，你跑去 NPC 家里看人家墙上挂的画。世界对你来说不是关卡，是一个可以慢慢呼吸的地方。通关那一刻你反而最舍不得。" },
+  ETSM: { title: "拆解工程师", subtitle: "一个人和系统较劲一整晚", quote: "这个机制有意思，让我研究一下午。",
+    traits: ["教程没讲的他自己摸出来","Excel 比游戏开得久","看到数据面板就两眼放光","玩归玩本质是搞研究"],
+    desc: "对你来说，游戏不是「玩」，是一个可以拆开来研究的精密机器。别人在意有没有变强，你在意「为什么会变强」。一个数值跳动你能看出来背后的公式，一个组合好用你想知道它打过多少其他组合。你和系统两个人，已经玩得很尽兴了。" },
+  ETCN: { title: "剧本主理人", subtitle: "带朋友走一整个故事，慢但有戏", quote: "你别急，听我把这段讲完。",
+    traits: ["朋友角色背景是你帮想的","一场对话能开三小时","选择支会全桌讨论","进度慢但每步都有故事"],
+    desc: "你最享受的不是赢，是「我们一起经历了一段事」。你能记得每个朋友角色的小习惯，能在结束很久之后还突然提起「那次我们差点全灭」。别人玩游戏是为了通关，你玩游戏是为了和这些人一起，攒出一段以后还能反复讲的回忆。" },
+  ETCM: { title: "总包工头", subtitle: "拉一群人一起从零搭一个世界", quote: "再给我两天，这个就成形了。",
+    traits: ["蓝图比游戏内容还多","群里最早起最晚睡那个","看到空地就想盖东西","嘴上说累第二天接着搞"],
+    desc: "你享受的不是完成一件事，是「我们一起从零做出了一个东西」。空地上慢慢盖出来的小屋、农场、工厂——别人看到的是结果，你记得的是中间所有的修补、推倒、灵感来的那一瞬间。朋友在玩，你在「建设」，但你比任何人都开心。" },
+  ERSN: { title: "入戏派", subtitle: "把每个主角都活成自己", quote: "这一段，我必须自己一个人完成。",
+    traits: ["剧情关键处会暂停五分钟","替主角做选择会真的纠结","通关后会空虚一周","不打扰我，我在演"],
+    desc: "你打游戏是在「活别人的人生」。每次握住手柄，你都不是在操作一个角色，是在变成他——他难过你跟着难过，他下定决心你跟着热血上涌。你不需要队友，不需要观众，就你一个人，跟主角一起把这一段路走完。" },
+  ERSM: { title: "硬骨头", subtitle: "对着 Boss 死一百次也不肯走", quote: "再来一次，我感觉到了。",
+    traits: ["死了一百次只会更上头","看到「困难模式」眼睛会亮","评论区从来不哭难度","通关靠的是肌肉记忆"],
+    desc: "你享受的是「我从打不过到打过」那一瞬间的爽感。别人觉得你受虐，你觉得这就是游戏的全部意义。一个 Boss 死了一百次，第一百零一次终于过了——你不会发朋友圈炫耀，你只会自己默默笑一下，然后说「下一个」。挫败对你来说不是痛苦，是燃料。" },
+  ERCN: { title: "现场主角", subtitle: "和兄弟在乱战里制造故事", quote: "你刚才那一下，绝对要剪进集锦。",
+    traits: ["输赢不重要过程要够爽","麦里整活第一名","记得每场最离谱的瞬间","玩游戏顺便交一辈子朋友"],
+    desc: "你不是为了赢才上场，你是为了「这一晚和谁玩了什么」才上场。一局结束之后大家骂的、笑的、那个谁帮你挡了一刀、谁在最后五秒掉线了——这些你都记得清清楚楚。游戏对你来说是一个舞台，每一场你和兄弟都在演新剧本。" },
+  ERCM: { title: "战术指挥官", subtitle: "上场就想赢，操作即语言", quote: "稳一点，按我说的来，下波打他们一脸。",
+    traits: ["开局先排兵布阵","队友走位他都看得见","失误会复盘但不甩锅","赢了不说输了反而话多"],
+    desc: "你不是来玩的，你是来打仗的。上场那一刻你脑子就开始转——队友站位、敌人节奏、下一波该走哪。别人觉得你紧张，你觉得你只是在认真。竞技对你来说是一种语言，赢只是顺便的事。" },
+  EASN: { title: "考据完美派", subtitle: "把世界翻个底朝天", quote: "等一下，那个角落我好像还没去过。",
+    traits: ["地图必须全部点亮","支线一个都不能漏","成就卡到 99% 会失眠","设定集会全部读完"],
+    desc: "你享受的是「把一个世界全部看完」那种饱满感。地图上还有一个问号没清，你就觉得这个游戏还没结束。别人通关的时候你才刚到中盘，因为你把所有 NPC 都聊过、所有道具都看过描述、所有角落都翻过。通关那一刻你才允许自己说：「行了，这个我玩够了。」" },
+  EASM: { title: "极限构筑师", subtitle: "一个人刷到天亮调一套配装", quote: "我知道这套还能再爆一点。",
+    traits: ["一套配装能调一晚上","工具人 Excel 永远开着","极限数值是一种信仰","通关只是顺便的事"],
+    desc: "你打游戏的本质是「优化」。别人玩完就结束了，你看着自己的输出数字，总觉得还能再高一点。一个角色你能调出别人想不到的玩法，一套装备你能压榨出别人没看见的潜力。通关对你不重要，重要的是「我做到了别人没做到的那个数字」。" },
+  EACN: { title: "公会编年史官", subtitle: "陪一群人一起老去", quote: "这游戏我们玩了三年了，谁也走不掉。",
+    traits: ["群里待得最久那个","新人来了第一个伸手","记得每个老人离开的日子","游戏可以换人不能换"],
+    desc: "你和这群人一起经历过太多事——一起开荒、一起卡关、一起在凌晨两点为了一个掉落欢呼。游戏对你来说早就不只是游戏，是这些人。哪天这个游戏停服了，你也不会真的伤心——只要这群人还在，下一个游戏你们一起换。" },
+  EACM: { title: "攻坚组核心", subtitle: "团本里把数字卷到极限", quote: "再来一次，我配装改了，这次稳了。",
+    traits: ["攻略文档比策划还详细","凌晨两点还在算输出","全团靠他不慌","赢了之后下一秒想下一个目标"],
+    desc: "你不是来娱乐的，你是来攻坚的。看到一个新的高难度内容，别人觉得难，你眼睛在发光——这就是你要的。你能为了一个 Boss 钻研一周，把每一个细节算到秒。通关那一刻你的反应不是放松，是「下一个什么时候开」。对你来说，「难」就是最大的吸引力。" },
+  ATSN: { title: "结局收藏家", subtitle: "所有结局都看完才肯睡", quote: "等等，那个选项如果选另一个会怎样？",
+    traits: ["多周目玩到结局背下来","存档命名比剧情还长","支线选择会反复读档","通关三遍还在想第四遍"],
+    desc: "对你来说，看完一个结局只是开始。你想知道——「如果当时我选了另一边呢？」于是你回去再走一遍。每一种结局你都要亲眼看到，每一个 NPC 死后是什么样你都要确认。别人通关一遍就够了，你要把所有平行宇宙都活一遍，才算真正「玩完」这个游戏。" },
+  ATSM: { title: "硬核完美主义者", subtitle: "默默把所有成就都刷完", quote: "就差最后一个了，今晚必须解锁。",
+    traits: ["成就栏永远是 100%","稀有成就榜上经常有他","为了一个奖杯能肝两天","通关三次只为不同难度"],
+    desc: "对你来说，「通关」只是第一步，「100%」才是真的结束。一个游戏只要还有未解锁的成就，你的大脑就会一直惦记。别人觉得你执着，但只有你自己知道——成就栏全亮那一刻的爽感，比任何剧情结局都来得实在。这不是强迫症，这是你打游戏的浪漫。" },
+  ATCN: { title: "剧本杀主持", subtitle: "拉朋友把每个结局都通一遍", quote: "信我，这条线你绝对会哭。",
+    traits: ["第二次玩只为带新人入坑","选项让队友选只为看反应","结局动画一起看效果最好","玩过的游戏会反复推荐"],
+    desc: "你享受的是「让别人也经历你经历过的」。一个让你哭过的剧情、一个让你震撼的反转——你想拉朋友重新走一遍，看他们的反应。你不是要赢，你是要分享。每一次他们「哇」一下、「这居然？」一下、最后红了眼眶——你比第一次玩的时候还感动。" },
+  ATCM: { title: "段位制霸者", subtitle: "把排位榜当人生 KPI", quote: "今天必须到下一段，输几把都行。",
+    traits: ["排位时间比工作还长","看到掉段会真的难过","复盘视频反复看","巅峰赛是信仰"],
+    desc: "你打游戏不为娱乐，为「爬上去」。每一次段位往上跳一格，那种感觉别的事给不了。掉段会真的影响你心情，连胜会让你舍不得下线。别人觉得排位是压力，你觉得这就是游戏存在的意义。哪天你巅峰了，你会截图，但下一秒你想的是——「下一个目标在哪。」" }
+};
+
+// ============ 50 款游戏库 ============
+// 类型 → emoji 兜底（icon 字段为空或加载失败时使用）
+function gameEmoji(t) {
+  const map = {
+    "ARPG":"⚔️","动作冒险":"🗡️","开放世界":"🏞️","RPG":"📜","CRPG":"📖","JRPG":"🎴",
+    "互动电影":"🎬","DLC":"🎁","银河城":"🦋","Roguelike":"💀","模拟经营":"🌾","节奏":"🎵",
+    "艺术":"🎨","元叙事":"🪞","生存":"🏕️","解谜":"🧩","MOBA":"⚡","MOBA手游":"⚡",
+    "FPS":"🔫","大逃杀格斗":"🥋","大逃杀FPS":"🪂","战术FPS":"🎯","非对称竞技":"🎭",
+    "回合制":"♟️","动作":"💥","塔防":"🏰","卡牌":"🃏","派对":"🎉","MMO":"⚔️","合作冒险":"🤝",
+    "沙盒":"🧱","生活模拟":"🐠","模拟生存":"🌑","模拟工厂":"🏭","农场模拟":"🌻","经营":"🏡",
+    "4X 策略":"🌍","太空4X":"🌌","大战略":"👑","卡牌 Roguelike":"🃏"
+  };
+  return map[t] || "🎮";
+}
+const GAMES = [
+  {n:"巫师3：狂猎",t:"ARPG",p:"PC/主机/Switch",tags:["ERSN","EASN","ETSN"],pop:5,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/292030/header.jpg"},
+  {n:"最后生还者2",t:"动作冒险",p:"PS",tags:["ERSN","ATSN","EASN"],pop:5,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/2531310/header.jpg"},
+  {n:"荒野大镖客2",t:"开放世界",p:"PC/主机",tags:["EASN","ETSN","ERSN"],pop:5,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/1174180/header.jpg"},
+  {n:"赛博朋克2077",t:"RPG",p:"PC/主机",tags:["ERSN","EASN","ATSN"],pop:5,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/1091500/header.jpg"},
+  {n:"神秘海域4",t:"动作冒险",p:"PS/PC",tags:["ERSN","ATSN","EASN"],pop:4,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/1659420/header.jpg"},
+  {n:"底特律：变人",t:"互动电影",p:"PS/PC",tags:["ATSN","ETSN","ERSN"],pop:4,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/1222140/header.jpg"},
+  {n:"极乐迪斯科",t:"CRPG",p:"PC/主机/Switch",tags:["ETSN","ATSN","EASN"],pop:3,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/632470/header.jpg"},
+  {n:"博德之门3",t:"CRPG",p:"PC/PS",tags:["ETCN","EACN","ATCN"],pop:5,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/1086940/header.jpg"},
+  {n:"女神异闻录5：皇家版",t:"JRPG",p:"主机/PC",tags:["EASM","ATSM","ERSM"],pop:4,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/1687950/header.jpg"},
+  {n:"赛博朋克：往日之影",t:"DLC",p:"PC/主机",tags:["ERSN","EASN","ATSN"],pop:4,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/2138330/header.jpg"},
+  {n:"空洞骑士",t:"银河城",p:"PC/Switch/主机",tags:["ERSM","ETSM","ETSN"],pop:4,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/367520/header.jpg"},
+  {n:"以撒的结合：忏悔",t:"Roguelike",p:"全平台",tags:["ERSM","EASM","ETSM"],pop:3,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/250900/header.jpg"},
+  {n:"黑帝斯",t:"Roguelike",p:"全平台",tags:["ERSM","EASM","ATSM"],pop:4,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/1145360/header.jpg"},
+  {n:"星露谷物语",t:"模拟经营",p:"全平台",tags:["ETCM","ETSM","EACN"],pop:5,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/413150/header.jpg"},
+  {n:"节奏地牢",t:"节奏",p:"PC/手机",tags:["ERSM","ETSM"],pop:2,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/247080/header.jpg"},
+  {n:"风之旅人",t:"艺术",p:"PS/PC",tags:["ETSN","ETCN","ETSM"],pop:3,ic:"https://picasso-private-1251524319.cos.ap-shanghai.myqcloud.com/formula-static/dibp/etpmqe7k/journey.jpg"},
+  {n:"史丹利的寓言",t:"元叙事",p:"PC",tags:["ETSN","ETSM","ATSN"],pop:3,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/221910/header.jpg"},
+  {n:"传说之下 Undertale",t:"RPG",p:"PC/主机",tags:["ETSN","ATSN","ETSM"],pop:4,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/391540/header.jpg"},
+  {n:"饥荒（联机版）",t:"生存",p:"PC/主机",tags:["ETCM","ETSM","EACM"],pop:3,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/322330/header.jpg"},
+  {n:"请出示证件",t:"解谜",p:"PC/Switch",tags:["ATSN","ETSN","ATSM"],pop:3,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/239030/header.jpg"},
+  {n:"英雄联盟",t:"MOBA",p:"PC",tags:["ERCM","ATCM","EACM"],pop:5,ic:"https://picasso-private-1251524319.cos.ap-shanghai.myqcloud.com/formula-static/dibp/k69wi6cv/lol.jpg"},
+  {n:"王者荣耀",t:"MOBA手游",p:"手机",tags:["ATCM","ERCM","EACM"],pop:5,ic:"https://picasso-private-1251524319.cos.ap-shanghai.myqcloud.com/formula-static/dibp/k69wi6cv/hok.jpg"},
+  {n:"DOTA2",t:"MOBA",p:"PC",tags:["ATCM","ERCM","ETCM"],pop:4,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/570/header.jpg"},
+  {n:"CS2",t:"FPS",p:"PC",tags:["ERCM","ATCM","ERSM"],pop:5,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/730/header.jpg"},
+  {n:"VALORANT",t:"FPS",p:"PC",tags:["ERCM","ATCM","ERSM"],pop:4,ic:"https://picasso-private-1251524319.cos.ap-shanghai.myqcloud.com/formula-static/dibp/k69wi6cv/valorant.jpg"},
+  {n:"永劫无间",t:"大逃杀格斗",p:"PC/主机",tags:["ERCM","ATCM","EACM"],pop:4,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/1203220/header.jpg"},
+  {n:"APEX 英雄",t:"大逃杀FPS",p:"PC/主机",tags:["ERCN","ERCM","EACM"],pop:4,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/1172470/header.jpg"},
+  {n:"守望先锋2",t:"FPS",p:"PC/主机",tags:["ERCM","EACM","ATCM"],pop:3,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/2357570/header.jpg"},
+  {n:"彩虹六号：围攻",t:"战术FPS",p:"PC/主机",tags:["ATCM","ERCM","ETCM"],pop:4,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/359550/header.jpg"},
+  {n:"第五人格",t:"非对称竞技",p:"手机/PC",tags:["ERCN","ERCM","EACN"],pop:4,ic:"https://picasso-private-1251524319.cos.ap-shanghai.myqcloud.com/formula-static/dibp/k69wi6cv/idv.jpg"},
+  {n:"黑神话：悟空",t:"ARPG",p:"PC/PS",tags:["ERSN","ERSM","EASN"],pop:5,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/2358720/header.jpg"},
+  {n:"原神",t:"开放世界",p:"全平台",tags:["EASN","EACN","ETSN"],pop:5,ic:"https://picasso-private-1251524319.cos.ap-shanghai.myqcloud.com/formula-static/dibp/k69wi6cv/genshin.png"},
+  {n:"崩坏：星穹铁道",t:"回合制",p:"手机/PC",tags:["ATSM","EASN","ATSN"],pop:5,ic:"https://picasso-private-1251524319.cos.ap-shanghai.myqcloud.com/formula-static/dibp/k69wi6cv/hsr.jpg"},
+  {n:"绝区零",t:"动作",p:"手机/PC",tags:["ERSM","ATSM","EASM"],pop:4,ic:"https://picasso-private-1251524319.cos.ap-shanghai.myqcloud.com/formula-static/dibp/k69wi6cv/zzz.jpg"},
+  {n:"明日方舟",t:"塔防",p:"手机/PC",tags:["ATSM","ETSM","EASM"],pop:4,ic:"https://picasso-private-1251524319.cos.ap-shanghai.myqcloud.com/formula-static/dibp/k69wi6cv/ak.jpg"},
+  {n:"三国杀",t:"卡牌",p:"手机/PC",tags:["ATCM","ETCM","ATCN"],pop:3,ic:"https://picasso-private-1251524319.cos.ap-shanghai.myqcloud.com/formula-static/dibp/k69wi6cv/sgs.jpg"},
+  {n:"蛋仔派对",t:"派对",p:"手机",tags:["ETCN","ERCN","EACN"],pop:5,ic:"https://picasso-private-1251524319.cos.ap-shanghai.myqcloud.com/formula-static/dibp/k69wi6cv/egg.jpg"},
+  {n:"燕云十六声",t:"MMO",p:"PC/手机",tags:["EACN","ETCN","EASN"],pop:3,ic:"https://picasso-private-1251524319.cos.ap-shanghai.myqcloud.com/formula-static/dibp/k69wi6cv/yy.jpg"},
+  {n:"Minecraft",t:"沙盒",p:"全平台",tags:["ETCM","ETSM","EACM"],pop:5,ic:"https://picasso-private-1251524319.cos.ap-shanghai.myqcloud.com/formula-static/dibp/k69wi6cv/mc.jpg"},
+  {n:"动物森友会",t:"生活模拟",p:"Switch",tags:["ETSN","ETCN","EASN"],pop:5,ic:"https://picasso-private-1251524319.cos.ap-shanghai.myqcloud.com/formula-static/dibp/k69wi6cv/acnh.jpg"},
+  {n:"城市：天际线2",t:"模拟经营",p:"PC/主机",tags:["ETSM","ATSM","EASM"],pop:3,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/949230/header.jpg"},
+  {n:"缺氧",t:"模拟生存",p:"PC",tags:["ETSM","ATSM","ERSM"],pop:3,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/457140/header.jpg"},
+  {n:"戴森球计划",t:"模拟工厂",p:"PC",tags:["ETSM","ATSM","EASM"],pop:3,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/1366540/header.jpg"},
+  {n:"双人成行",t:"合作冒险",p:"PC/主机",tags:["ETCM","ETCN","EACN"],pop:5,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/1426210/header.jpg"},
+  {n:"集合啦动物森友会",t:"经营",p:"Switch",tags:["ETCN","ETSN","EACN"],pop:5,ic:"https://picasso-private-1251524319.cos.ap-shanghai.myqcloud.com/formula-static/dibp/k69wi6cv/acnh.jpg"},
+  {n:"文明6",t:"4X 策略",p:"PC/Switch/主机",tags:["ATSM","ETSM","EASM"],pop:4,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/289070/header.jpg"},
+  {n:"群星 Stellaris",t:"太空4X",p:"PC",tags:["ATSM","ETSM","EASN"],pop:3,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/281990/header.jpg"},
+  {n:"十字军之王3",t:"大战略",p:"PC",tags:["ATSN","ETSN","ATSM"],pop:3,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/1158310/header.jpg"},
+  {n:"杀戮尖塔",t:"卡牌 Roguelike",p:"PC/手机",tags:["ATSM","ETSM","ERSM"],pop:4,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/646570/header.jpg"},
+  {n:"怪物猎人：荒野",t:"动作",p:"全平台",tags:["ERCM","EACM","ERSM"],pop:5,ic:"https://cdn.cloudflare.steamstatic.com/steam/apps/2246340/header.jpg"},
+];
+
+// ============ 计分逻辑 ============
+function calcResult(answers) {
+  const scores = { E:0, A:0, T:0, R:0, S:0, C:0, N:0, M:0 };
+  answers.forEach((dim) => {
+    // N 维度因题目较少（3 票），单票加权 1.5
+    const weight = (dim === "N") ? 1.5 : 1;
+    scores[dim] = (scores[dim] || 0) + weight;
+  });
+  const code =
+    (scores.E >= scores.A ? "E" : "A") +
+    (scores.T >= scores.R ? "T" : "R") +
+    (scores.S >= scores.C ? "S" : "C") +
+    (scores.N >= scores.M ? "N" : "M");
+  return code;
+}
+
+// ============ 游戏匹配：按维度命中数 + 热度 ============
+function recommendGames(code) {
+  // 计算每款游戏与用户的"维度相似度"
+  // 算法：把 code 拆成 4 个字母（如 ATCM），对每个游戏 tags 列表中的 type
+  //   做"同位字母匹配数"，累加得分；再加上热度 pop * 0.2 作小幅加权
+  const ranked = GAMES.map(g => {
+    let dimScore = 0;
+    g.tags.forEach((tag, idx) => {
+      // tags 顺序代表适配优先级，第 1 个 +3，第 2 个 +2，第 3 个 +1
+      const priorityWeight = [3, 2, 1][idx] || 1;
+      let matchCount = 0;
+      for (let i = 0; i < 4; i++) {
+        if (tag[i] === code[i]) matchCount++;
+      }
+      // 4 个字母全匹配 = 满分，否则按比例
+      dimScore += (matchCount / 4) * priorityWeight;
+    });
+    // 热度加权（最高 +1.0），避免冷门游戏一直挤掉热门
+    const popBonus = (g.pop / 5) * 1.0;
+    return { ...g, score: dimScore + popBonus };
+  });
+  ranked.sort((a, b) => b.score - a.score);
+  return ranked.slice(0, 5);
+}
+
+// ============ 状态 ============
+const state = {
+  page: "cover",  // cover | quiz | loading | result
+  qIdx: 0,
+  answers: [],
+  result: null,
+};
+
+// 从 URL hash 恢复结果（用于分享链接）
+function loadFromHash() {
+  const hash = window.location.hash.slice(1);
+  if (hash && hash.length === 4 && RESULTS[hash]) {
+    state.result = hash;
+    state.page = "result";
+  }
+}
+
+function getPalette(code) {
+  const key = code[0] + code[1]; // ET/ER/AT/AR
+  return PALETTES[key] || PALETTES.ER;
+}
+
+// ============ 渲染 ============
+function $(sel) { return document.querySelector(sel); }
+
+function showToast(msg) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+function render() {
+  const app = $("#app");
+  if (state.page === "cover") renderCover(app);
+  else if (state.page === "quiz") renderQuiz(app);
+  else if (state.page === "loading") renderLoading(app);
+  else if (state.page === "result") renderResult(app);
+  window.scrollTo(0, 0);
+}
+
+function renderCover(app) {
+  // 16 个动物 → 跑马灯两行（一行 8 个 + 复制一份保证无缝循环；第二行反向）
+  const animals = Object.values(ANIMALS);
+  const row1 = animals.slice(0, 8);
+  const row2 = animals.slice(8);
+  const rowHtml = (arr) => arr.concat(arr).map(a => `<img src="${CDN_BASE}${a}.png" alt="">`).join('');
+  app.innerHTML = `
+    <div class="cover">
+      <div class="tag">G · M · T · I</div>
+      <h1>你是哪种<br><span class="accent">游戏玩家</span>？</h1>
+      <div class="sub">4 维度 16 型 · 12 道题<br>找到最适合你的本命游戏</div>
+      <div class="marquee-wrap">
+        <div class="marquee-track">${rowHtml(row1)}</div>
+      </div>
+      <div class="marquee-wrap reverse">
+        <div class="marquee-track">${rowHtml(row2)}</div>
+      </div>
+      <button class="btn" onclick="startQuiz()">开始测试 →</button>
+      <div class="meta">
+        <span>12 道题</span><span>约 3 分钟</span><span>16 种结果</span>
+      </div>
+      <div class="credit">GMTI · Game-MBTI · 灵感参考 @乔纳森李 DOGTI</div>
+    </div>
+  `;
+}
+
+function renderQuiz(app) {
+  const q = QUESTIONS[state.qIdx];
+  const progress = ((state.qIdx) / QUESTIONS.length) * 100;
+  app.innerHTML = `
+    <div class="quiz">
+      <div class="progress-bar"><div class="progress-fill" style="width: ${progress}%"></div></div>
+      <div class="progress-text">${state.qIdx + 1} / ${QUESTIONS.length}</div>
+      <div class="quiz-hint">${q.hint}</div>
+      <div class="quiz-title">${q.text}</div>
+      <div class="options">
+        ${q.options.map((opt, i) => `
+          <button class="option" onclick="answer('${opt.dim}', this)">
+            <span class="key">${String.fromCharCode(65 + i)}</span>
+            <span>${opt.text}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderLoading(app) {
+  const steps = ["正在分析你的探索倾向", "正在计算策略偏好", "正在匹配你的本命游戏", "马上揭晓..."];
+  let step = 0;
+  app.innerHTML = `
+    <div class="loading">
+      <img src="${CDN_BASE}cat.png" class="pixel-img" alt="">
+      <h2>正在为你解读...</h2>
+      <div class="step" id="step">${steps[0]}<span class="dots">...</span></div>
+    </div>
+  `;
+  const timer = setInterval(() => {
+    step++;
+    if (step >= steps.length) {
+      clearInterval(timer);
+      // 计算结果
+      const code = calcResult(state.answers);
+      state.result = code;
+      state.page = "result";
+      window.location.hash = code;
+      render();
+      return;
+    }
+    const el = $("#step");
+    if (el) el.innerHTML = `${steps[step]}<span class="dots">...</span>`;
+  }, 700);
+}
+
+function renderResult(app) {
+  const code = state.result;
+  const r = RESULTS[code];
+  const animal = ANIMALS[code];
+  const pal = getPalette(code);
+  const games = recommendGames(code);
+  app.innerHTML = `
+    <div class="result" style="--c1: ${pal.c1}; --c2: ${pal.c2};">
+      <div class="result-hero">
+        <div class="code">${code.split('').join(' · ')}</div>
+        <img src="${CDN_BASE}${animal}.png" class="pixel-img ip" alt="" crossorigin="anonymous">
+        <h2>${r.title}</h2>
+        <div class="subtitle">${r.subtitle}</div>
+      </div>
+
+      <div class="quote">${r.quote}</div>
+
+      <div class="section">
+        <h3>你的 GMTI 拆解</h3>
+        <div class="dims">
+          ${DIMENSIONS.map((dim, i) => {
+            const myLetter = code[i];
+            const youSide = (myLetter === dim.pos.letter) ? dim.pos : dim.neg;
+            const otherSide = (myLetter === dim.pos.letter) ? dim.neg : dim.pos;
+            return `
+              <div class="dim-row">
+                <div class="dim-label">${dim.label}</div>
+                <div class="dim-versus">
+                  <div class="dim-side you">
+                    <div class="dim-letter">${youSide.letter}</div>
+                    <div class="dim-name">${youSide.name}</div>
+                    <div class="dim-desc">${youSide.desc}</div>
+                  </div>
+                  <div class="dim-vs">VS</div>
+                  <div class="dim-side other">
+                    <div class="dim-letter">${otherSide.letter}</div>
+                    <div class="dim-name">${otherSide.name}</div>
+                    <div class="dim-desc">${otherSide.desc}</div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>你的关键词</h3>
+        <div class="traits">
+          ${r.traits.map(t => `<div class="trait">${t}</div>`).join('')}
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>你这种人是这样的</h3>
+        <div class="desc">${r.desc}</div>
+      </div>
+
+      <div class="section">
+        <h3>为你匹配的 5 款本命游戏</h3>
+        <div class="games">
+          ${games.map((g, i) => `
+            <div class="game-card">
+              <div class="game-rank">${i + 1}</div>
+              <div class="game-icon">${g.ic ? `<img src="${g.ic}" alt="${g.n}" onerror="this.parentNode.innerHTML='${gameEmoji(g.t)}'">` : gameEmoji(g.t)}</div>
+              <div class="game-info">
+                <div class="game-name">${g.n}</div>
+                <div class="game-meta">${g.t} · ${g.p}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" onclick="copyShareLink()">📋 复制链接 · 测测你朋友</button>
+        <button class="btn btn-light" onclick="restart()">↻ 再测一次</button>
+      </div>
+
+      <div class="footer-tip">
+        把链接发到群里，<br>看看你和谁是同一型 🎮
+      </div>
+    </div>
+  `;
+}
+
+// ============ 行为 ============
+function startQuiz() {
+  state.qIdx = 0;
+  state.answers = [];
+  state.page = "quiz";
+  render();
+}
+
+function answer(dim, btn) {
+  // 视觉反馈
+  btn.classList.add('selected');
+  state.answers.push(dim);
+  setTimeout(() => {
+    state.qIdx++;
+    if (state.qIdx >= QUESTIONS.length) {
+      state.page = "loading";
+    }
+    render();
+  }, 280);
+}
+
+function copyShareLink() {
+  const url = window.location.origin + window.location.pathname + "#" + state.result;
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showToast('链接已复制'); }
+    catch (e) { showToast(url); }
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(
+      () => showToast('链接已复制 ✓'),
+      fallback
+    );
+  } else {
+    fallback();
+  }
+}
+
+function restart() {
+  state.qIdx = 0;
+  state.answers = [];
+  state.result = null;
+  state.page = "cover";
+  window.location.hash = '';
+  render();
+}
+
+// ============ 启动 ============
+loadFromHash();
+render();
+</script>
+</body>
+</html>
